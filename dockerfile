@@ -13,4 +13,4 @@ COPY tomcat-users.xml /usr/share/tomcat/conf
 COPY context.xml /usr/share/tomcat/webapps/manager/META-INF
 CMD mkdir /usr/share/tomcat/webapps/myapp
 CMD cp -p /app/target/*.war /usr/share/tomcat/webapps/myapp
-CMD /opt/apache-tomcat-8.5.42/bin/startup.sh
+CMD /opt/apache-tomcat-8.5.42/bin/startup.sh && tail -f /usr/share/tomcat.logs/catalina.out
