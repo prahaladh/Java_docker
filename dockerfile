@@ -11,4 +11,4 @@ RUN tar xvf /opt/apache-tomcat-8.5.42.tar.gz -C /opt/
 RUN ln -s /opt/apache-tomcat-8.5.42 /usr/share/tomcat
 COPY tomcat-users.xml /usr/share/tomcat/conf
 CMD cp -p /app/target/*.war /usr/share/tomcat/webapps
-CMD nohup /opt/apache-tomcat-8.5.42/bin/startup.sh && tail -f /usr/share/tomcat/catalina.out
+CMD /opt/apache-tomcat-8.5.42/bin/startup.sh && tail -f /usr/share/tomcat/logs/catalina.out
