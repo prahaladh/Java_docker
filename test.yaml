@@ -1,0 +1,34 @@
+---
+- name: Check if tar file is copied, files are synced, and checksum matches
+  hosts: all
+  become: yes
+  tasks:
+  
+    - name: Extract tar file contents into a temporary folder
+      unarchive:
+        src: /path/to/tarfile.tar
+        dest: /tmp/extracted_tar
+        remote_src: yes
+        creates: /tmp/extracted_tar
+
+    - name: Get checksums of files in the extracted tar directory
+      command: find /tmp/extracted_tar -type f -exec sha256sum {} +
+      register: extracted_checksums
+
+    - name: Get checksums of files in the destination directory
+      command: find /destination/folder -type f -exec sha256sum {} +
+      register: destination_checksums
+
+    - name: Compare checksums of extracted files with destination files
+      set_fact:
+        diff_output: "{{ extracted_checksums.stdout_lines | difference(destination_checksums.stdout_lines) }}"
+
+    - name: Display the differences if checksums do not match
+      debug:
+        msg: "Files with different checksums or missing: {{ diff_output }}"
+      when: diff_output | length > 0
+
+    - name: Cleanup extracted tar contents
+      file:
+        path: /tmp/extracted_tar
+        state: absent
