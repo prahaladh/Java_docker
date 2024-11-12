@@ -1,0 +1,64 @@
+import requests
+from jinja2 import Template
+
+# Jenkins server details
+JENKINS_URL = "http://your-jenkins-url.com"
+JENKINS_USER = "your-username"
+JENKINS_API_TOKEN = "your-api-token"
+
+# List of Jenkins job names to check
+job_names = ["Job1", "Job2", "Job3"]
+
+# Function to fetch build parameters for a specific job
+def get_job_build_params(job_name):
+    url = f"{JENKINS_URL}/job/{job_name}/api/json?tree=builds[number,actions[parameters[name,value]]]"
+    response = requests.get(url, auth=(JENKINS_USER, JENKINS_API_TOKEN))
+    response.raise_for_status()
+
+    build_params = []
+    builds = response.json().get("builds", [])
+    for build in builds:
+        params = {param["name"]: param["value"] for action in build["actions"] if "parameters" in action for param in action["parameters"]}
+        build_params.append({"build_number": build["number"], "parameters": params})
+    return build_params
+
+# Fetch parameters for each job
+jobs_data = {}
+for job in job_names:
+    jobs_data[job] = get_job_build_params(job)
+
+# HTML template for displaying build parameters
+html_template = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenkins Job Build Parameters</title>
+</head>
+<body>
+    <h1>Jenkins Job Build Parameters</h1>
+    {% for job, builds in jobs_data.items() %}
+        <h2>Job: {{ job }}</h2>
+        {% for build in builds %}
+            <h3>Build Number: {{ build.build_number }}</h3>
+            <ul>
+                {% for name, value in build.parameters.items() %}
+                    <li><strong>{{ name }}:</strong> {{ value }}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endfor %}
+</body>
+</html>
+"""
+
+# Generate HTML content using Jinja2
+template = Template(html_template)
+html_content = template.render(jobs_data=jobs_data)
+
+# Save HTML to a file
+with open("jenkins_build_parameters.html", "w") as file:
+    file.write(html_content)
+
+print("HTML file generated: jenkins_build_parameters.html")
