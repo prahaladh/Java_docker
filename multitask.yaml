@@ -1,0 +1,13 @@
+- name: Run multiple tasks in parallel
+  hosts: all
+  strategy: free
+  tasks:
+    - name: Task 1
+      ansible.builtin.shell: sleep 10
+      async: 15
+      poll: 0
+
+    - name: Task 2
+      ansible.builtin.shell: sleep 10
+      async: 15
+      poll: 0
